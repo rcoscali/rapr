@@ -1,0 +1,176 @@
+/**
+ * db.js
+ *
+ * Express javascript application for DB manip
+ */
+
+/**
+ * Load Modules Required
+ *
+ */
+// Require FS for passing cert&key for https www server
+const fs = require('fs');
+// Require path for addressing static public dir for www server
+var path = require('path');
+// Require morgan as a console/debug logger
+var logger = require('morgan');
+// Require sqlite3 for accounting (storing/fetching keys)
+const sqlite3 = require('sqlite3').verbose();
+// Require util for format method
+const util = require('util');
+
+/**
+ // The object instance supporting this module
+ */
+function db() {
+    console.log('****** Constructor for db ...');
+    this.dbFilePathName = '';
+    this.accountingdb = '';
+    this.params = {};
+    
+    // Function opening the database
+    this.openDb = async function()
+    {
+	console.log('****** Opening Accounting DB ...');
+	// Instanciate accounting DB
+	this.accountingdb =
+	    new sqlite3.Database(
+		'c:/Users/a047461/AppData/Local/rapr/accounting.db',
+		sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE | sqlite3.OPEN_FULLMUTEX | sqlite3.OPEN_PRIVATECACHE,
+		(err) =>
+		{
+		    if (err)
+		    {
+			console.error(err.message);
+			throw err;
+		    }
+		    else
+			console.log('****** Accounting DB openned !');
+		}
+	    );
+    }
+    
+    this.persistAccount = function() {
+	console.log('****** db.persistAccount ...');
+	console.log('****** db.persistAccount: this.params = '+this.params);
+	console.log('****** db.persistAccount: this.params["iban"] = '+this.params['iban']);
+	console.log('****** db.persistAccount: this.params["bankId"] = '+this.params['bankId']);
+	console.log('****** db.persistAccount: this.params["currencyId"] = '+this.params['currencyId']);
+	try {
+	    let stmtFmt = "INSERT INTO Accounts (Iban, BankId, CurrencyId)       VALUES        ('%s', %d, %d);";
+	    let stmt = util.format(stmtFmt, this.params['iban'], this.params['bankId'], this.params['currencyId'])
+	    console.log(stmt);
+	    this.accountingdb.run(stmt);
+	} catch(err) {
+	    console.log("[persistAccount] Error: "+err);
+	}
+    }
+
+    this.getAccountByIban = function() {
+	try {
+	    let stmt = "SELECT * FROM Accounts WHERE Iban = ?";
+	    this.accountingdb.get(
+		stmt,
+		[this.params.iban],
+		(err, row) => {
+		    if (err)
+			throw err;
+		    this.result = new Object;
+		    this.result.id = row.id;
+		    this.result.Iban = row.Iban;
+		    this.result.BankId = row.BankId;
+		    this.result.CurrencyId = row.CurrencyId;
+		    console.log("Account:");
+		    console.log("    id = "+this.result.id);
+		    console.log("    Iban = "+this.result.Iban);
+		    console.log("    BankId = "+this.result.BankId);
+		    console.log("    CurrencyId = "+this.result.CurrencyId);
+		    return this.result;
+		});
+	} catch (err) {
+	    console.log("[getAccountByIban] Error: "+err);
+	}
+    }
+
+    this.persistCurrency = function(db, currencyInstance) {
+	console.log('****** db.persistCurrency ...');
+	console.log('****** db.persistCurrency this.params.LongName = "'+this.params.longName+'"');
+	console.log('****** db.persistCurrency this.params.Symbol = "'+this.params.symbol+'"');
+	console.log('****** db.persistCurrency this.params.Code = "'+this.params.code+'"');
+	try {
+	    let stmtFmt = "INSERT INTO Currencies (LongName, Symbol, Code)       VALUES        ('%s', '%s', '%s');";
+	    let stmt = util.format(stmtFmt, this.params['longName'], this.params['symbol'], this.params['code']);
+	    console.log(stmt);
+	    this.accountingdb.run(stmt);
+	} catch(err) {
+	    console.log(err);
+	}
+    }
+
+    this.persistBank = function(db, bankInstance) {
+	console.log('****** db.persistBank ...');
+	try {
+	    let stmtFmt = "INSERT INTO Banks (LongName, Code, Bic)       VALUES        ('%s', '%s', '%s');";
+	    let stmt = util.format(stmtFmt, this.params['longName'], this.params['code'], this.params['bic']);
+	    console.log(stmt);
+	    this.accountingdb.run(stmt);
+	} catch(err) {
+	    console.log(err);
+	}
+    }
+
+    this.persistStatement = function(db, statementInstance) {
+	console.log('****** db.persistStatement ...');
+	try {
+	    let stmtFmt = "INSERT INTO Statements (ElectronicSeqNr, CreationDateTime, AccountId, BalanceId) VALUES ('%s', '%s', %d, %d);";
+	    let stmt = util.format(stmtFmt,
+				   this.params['electronicSeqNr'], this.params['creationDateTime'],
+				   this.params['accountId'], this.params['balanceId']);
+	    console.log(stmt);
+	    this.accountingdb.run(stmt);
+	} catch(err) {
+	    console.log(err);
+	}
+    }
+
+    this.persistBalance = function(db, balanceInstance) {
+	console.log('****** db.persistBalance ...');
+	try {
+	    let stmtFmt = "INSERT INTO Balances (TypeCodeId, ProprietaryType, SubTypeCodeId, Ammount, CreditDebit, DateTime, NumberOfEntries, SumOfEntries) VALUES (%d, '%s', %d, %s, '%s', '%s', %s, %s);";
+	    let stmt = util.format(stmtFmt,
+				   this.params['typeCodeId'], this.params['proprietaryType'],
+				   this.params['subTypeCodeId'], this.params['ammount'],
+				   this.params['creditDebit'], this.params['dateTime'],
+				   this.params['numberOfEntries'], this.params['sumOfEntries']
+				  );
+	    console.log(stmt);
+	    this.accountingdb.run(stmt);
+	} catch(err) {
+	    console.log(err);
+	}
+    }
+
+    this.persistBalanceTypeCode = function(db, balanceTypeCodeInstance) {
+	try {
+	} catch(err) {
+	    console.log(err);
+	}
+    }
+
+    this.persistEntry = function(db, entryInstance) {
+	try {
+	} catch(err) {
+	    console.log(err);
+	}
+    }
+
+    this.persistStatusCode = function (db, statusCodeInstance) {
+	try {
+	} catch(err) {
+	    console.log(err);
+	}
+    }
+}
+
+// and the module itself
+module.exports = new db;

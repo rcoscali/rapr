@@ -1,0 +1,67 @@
+doctype 1.1
+html(lang="fr")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    title= title
+    block styles
+      link(rel='stylesheet', href='/stylesheets/style.css')
+      link(rel="stylesheet", href="/stylesheets/jquery-ui.css")
+    block scripts
+      script(type="text/javascript", src='/javascripts/jquery.js')
+      script(type="text/javascript", src='/javascripts/jquery-ui.js')
+  body
+    table(width="100%")
+      tr
+        td(colspan="2", class="block-header")
+          block header
+            h1
+              center
+                | Raprochements Bancaires
+      tr(width="25%")
+        td
+          table(border="1", width="100%", class="block-sidebar")
+            tr
+              td
+                p
+                  | &nbsp;
+                br
+                p
+                  | &nbsp;
+                br
+            tr
+              td
+                block sidebar
+                  h3
+                    | Relevés bancaire
+                  div
+                    p
+                      a(href='/import_releve')
+                        | Importer un relevé bancaire
+                      br
+                      a(href='/list_loaded_releve')
+                        | Liste des relevés bancaires chargés dans la BdD
+                  h3
+                    | Grand livre Gercop
+                  div
+                    p
+                      a(href='/import_grand_livre')
+                        | Importer un grand livre Gercop
+                      br
+                      a(href='/liste_loaded_grand_livre')
+                        | Liste des grands livres Gercop chargés dans la BdD
+            tr
+              td
+                p
+                  | &nbsp;
+                br
+                p
+                  | &nbsp;
+        td(width="60%")
+          block content
+            #{content}
+      tr
+        td(colspan="2", class="block-footer")
+          block footer
+            p
+              | Copyright 2022 Rémi COHEN SCALI

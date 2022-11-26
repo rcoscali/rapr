@@ -1,0 +1,17 @@
+extends layout
+
+block content
+  p 
+    center
+      | #{content}
+  form(method="post", action="/load_releve")
+    table
+      tr
+        td
+          | Fichier du relevÃ© bancaire:
+        td
+          input(type="file", id="fichier_releve", name="fichier_releve", accept="text/xml")
+      tr
+        td(colspan="2")
+          input(type="submit", class="rapr-button", value="Chargement du fichier")
+          input(type="button", class="rapr-button", value="Annulation")

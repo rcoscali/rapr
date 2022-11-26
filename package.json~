@@ -1,0 +1,28 @@
+{
+  "name": "rapr",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "debug": "set DEBUG='express:*,rapr:*' & node --trace-warnings --inspect ./bin/www",
+    "initdb": "node ./bin/accountingdb -- --init-db",
+    "dumpdb": "node ./bin/accountingdb -- --dump-db",
+    "restoredb": "node ./bin/accountingdb -- --restore-db"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.1",
+    "child_process": "^1.0.2",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "express-fileupload": "^1.4.0",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1",
+    "nodemon": "^2.0.20",
+    "pug": "^3.0.2",
+    "request-promise": "^4.2.6",
+    "sqlite3": "^5.1.2",
+    "stylus": "0.54.5",
+    "xml2js": "^0.4.23"
+  }
+}

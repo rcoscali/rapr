@@ -1,0 +1,39 @@
+{
+    // Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
+    // Pointez pour afficher la description des attributs existants.
+    // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug account-by-iban",
+            "program": "${workspaceFolder}/bin/accountingdb",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node",
+            "args": ["--account-by-iban", "--iban", "FR76928836647839290734"]
+        },
+        {
+            "name": "Debug missing arg account-by-iban",
+            "program": "${workspaceFolder}/bin/accountingdb"
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node",
+            "args": ["--account-by-iban"]
+        },
+        {
+            "name": "Debug persist-account",
+            "program": "${workspaceFolder}/bin/accountingdb",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node",
+            "args": ["--persist-account", "--iban", "FR76928836647839290734", "--currencyId", "1", "--bankId", "2"]
+        }
+
+    ]
+}

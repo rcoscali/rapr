@@ -1,0 +1,7 @@
+{
+    "terminal.explorerKind": "integrated",
+    "terminal.integrated.defaultProfile.linux": "",
+    "terminal.integrated.automationProfile.osx": {
+    "path": ""
+    }
+}

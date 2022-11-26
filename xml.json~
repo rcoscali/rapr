@@ -1,0 +1,6 @@
+
+> rapr@0.0.1 start
+> node ./bin/www
+
+****** Constructor for db ...
+****** Accounting DB openned !

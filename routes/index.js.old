@@ -1,0 +1,141 @@
+var express = require('express');
+var router = express.Router();
+const xml2js = require('xml2js');
+const sqlite3 = require('sqlite3').verbose();
+const fileUpload = require('express-fileupload');
+
+function processGrpHdr(db, grpHdr) {
+    grpHdr.forEach((element) => {
+	var creationDateTime = element['CreDtTm'][0].trim();
+	var msgId = element['MsgId'][0].trim();
+	var lastPage = element['MsgPgntn'][0]['LastPgInd'][0].trim() === 'true';
+	var pageNb = element['MsgPgntn'][0]['PgNb'][0].trim();
+	console.log("    CreationDateTime = " + creationDateTime);
+	console.log("    MsgId = " + msgId);
+	console.log("    LastPage = " + lastPage);
+	console.log("    PageNb = " + pageNb);
+    });
+}
+
+function processStmt(db, stmt) {
+    stmt.forEach((element) => {
+	var currency = element['Acct'][0]['Ccy'][0].trim();
+	var iban = element['Acct'][0]['Id'][0]['IBAN'][0].trim();
+	var bic = element['Acct'][0]['Svcr'][0]['FinInstnId'][0]['BIC'][0].trim();
+	console.log("    currency = " + currency);
+	console.log("    iban = " + iban);
+	console.log("    bic = " + bic);
+	element['Bal'].forEach((balelement) => {
+	    var ammount = balelement['Amt'][0]['$'].trim();
+	    var creditOrDebit = balelement['CdtDbtInd'][0].trim();
+	    var date = balelement['Dt'][0]['Dt'][0].trim();
+	    var type = balelement['Tp'][0]['CdOrPrtry'][0]['Cd'][0].trim();
+	})	
+    });
+}
+
+function processBkToCstmrStmt(db, bank2CstmrStmt) {
+    bank2CstmrStmt.forEach((element) => {
+	processGrpHdr(db, element['GrpHdr']);
+	processStmt(db, element['Stmt']);
+    });
+}
+
+// Instanciate keystore DB
+var accountingdb =
+    new sqlite3.Database(
+        'c:/Users/a047461/AppData/Local/rapr/accounting.db',
+        sqlite3.OPEN_READWRITE | sqlite3.OPEN_FULLMUTEX | sqlite3.OPEN_PRIVATECACHE,
+        (err) =>
+        {
+            if (err)
+            {
+                console.error(err.message);
+                process.exit(1);
+            }
+            else {
+                console.log('****** Accounting DB openned !');
+
+                var app = express();
+                app.locals.accountingDb = accountingdb;
+                /* GET home page. */
+                router.get(
+                    '/',
+	            (req, res, next) =>
+                    {
+	                res.render(
+                            'index',
+			    {
+			        title: 'Rapprochements Bancaires',
+			        content: 'Rapprochements Bancaires'
+			    }
+			);
+	            }
+	        );
+                /* GET import_releve page. */
+                router.get(
+                    '/import_releve',
+	            (req, res, next) =>
+                    {
+	                res.render(
+                            'import_releve',
+			    {
+			        title: 'Importation Relevé Bancaire',
+			        content: 'Sélectionner un fichier contenant le relevé bancaire'
+			    }
+			);
+	            }
+	        );
+                /* POST upload_releve page */
+                router.post(
+                    '/upload_releve',
+	            async (req, res, next) =>
+                    {
+			var releve, result;
+		        try
+                        {
+		            if(!req.files)
+                            {
+			        res.send(
+                                    {
+			                status: false,
+			                message: 'No file uploaded'
+			            }
+                                );
+		            }
+		            else {
+			        releve = req.files.fichier_releve;
+			        result = xml2js.parseStringPromise(releve.data).then((result) =>
+                                    {
+			                console.log('XML parsed!');
+					var BankToCustomerStatements = result.Document['BkToCstmrStmt'];
+					processBkToCstmrStmt(accountingdb, BankToCustomerStatements);
+			                //send response
+			                res.render(
+					    'upload_releve',
+					    {
+						'content': 'file '+releve.name+' size '+releve.size
+					    }
+                                        );
+			            }
+                                ).catch(
+                                    function (err)
+                                    {
+			                // Failed
+			                res.send(
+                                            {
+				                status: false,
+				                message: 'No file uploaded'
+			                    });
+			            });				
+		            }
+		        }
+                        catch (err) {
+		            res.status(500).send(err);
+		        }
+	            }
+	        );
+            }
+        }
+    );
+module.exports = router;
